@@ -1,7 +1,7 @@
 'use strict'
 
 // prettier-ignore
-const months = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ]
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 const form = document.querySelector('.form')
 const containerWorkouts = document.querySelector('.workouts')
@@ -13,34 +13,52 @@ const inputElevation = document.querySelector('.form__input--elevation')
 
 let map, mapEvent
 
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function (position) {
+class App {
+  #map;
+  #mapEvent;
+
+  constructor() {
+    this._getPosition()
+  }
+
+  _getPosition() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), function() {
+        alert('Could not get location')
+      })
+    }
+  }
+
+  _loadMap(position) {
     const { latitude } = position.coords
     const { longitude } = position.coords
-    console.log(`https://www.google.com/maps/@${latitude},${longitude}`)
+    //console.log(`https://www.google.com/maps/@${latitude},${longitude}`)
 
-    const coords = [ latitude, longitude ]
+    const coords = [latitude, longitude]
 
-    map = L.map('map').setView(coords, 13)
+    this.#map = L.map('map').setView(coords, 13)
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map)
+    }).addTo(this.#map)
 
     // Handles click on map
-    map.on('click', function (mapE) {
-      mapEvent = mapE
+    this.#map.on('click', function(mapE) {
+      this.#mapEvent = mapE
       form.classList.remove('hidden')
       inputDistance.focus()
+    })
+  }
 
-    })
-  },
-    function () {
-      alert('Could not get location')
-    })
+  _showForm() { }
+  _toggleElevationField() { }
+  _newWorkout() { }
 }
 
-form.addEventListener('submit', function (e) {
+
+const app = new App()
+
+form.addEventListener('submit', function(e) {
   e.preventDefault()
 
   // Clear input fields
@@ -50,7 +68,7 @@ form.addEventListener('submit', function (e) {
   console.log(mapEvent)
   const { lat, lng } = mapEvent.latlng
 
-  L.marker([ lat, lng ])
+  L.marker([lat, lng])
     .addTo(map)
     .bindPopup(
       L.popup({
@@ -65,7 +83,9 @@ form.addEventListener('submit', function (e) {
     .openPopup()
 })
 
-inputType.addEventListener('change', function () {
+inputType.addEventListener('change', function() {
   inputElevation.closest('.form__row').classList.toggle('for__row--hidden')
   inputCadence.closest('.form__row').classList.toggle('for__row--hidden')
 })
+
+
